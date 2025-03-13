@@ -1,0 +1,21 @@
+{
+    "name": "Scala.js with Scala CLI and Vite",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": ".."
+    },
+    "initializeCommand": {
+        "create-volume": "docker volume create exclude-volume"
+    },
+    "postStartCommand": {
+        "setupIDE": "rm -rf .scala-build .bsp .bloop && scala-cli setup-ide .",
+        "devServer": "nohup bash -c 'npm install && npm run devContainer &'"
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "scalameta.metals"
+            ]
+        }
+    }
+}
