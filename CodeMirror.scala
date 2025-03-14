@@ -18,6 +18,8 @@ trait CodeMirrorInstance extends js.Object:
       listener: js.Function1[CodeMirrorValue, Unit]
   ): Unit = js.native
 
+  def setSize(width: String, height: String): this.type = js.native
+
   def markText(from: js.Any, to: js.Any, options: js.Any): CodeMirrorMark =
     js.native
   def getCursor(): CodeMirrorCursor = js.native

@@ -133,7 +133,7 @@ import scala.annotation.tailrec
 
   val app =
     div(
-      cls := "content mx-auto my-4 w-10/12 bg-white/70 p-6 rounded-xl flex flex-col gap-4",
+      cls := "content mx-auto my-4 w-10/12 bg-white/70 p-6 rounded-xl flex flex-col gap-4 min-h-150",
       updateTextIndex,
       updateTreeView,
       updateError,
@@ -213,6 +213,8 @@ def codeMirrorTextArea(
 
       instance
         .foreach(_.on("change", value => target.set(value.getValue())))
+
+      instance.foreach(_.setSize("100%", "100%"))
       instance.foreach(
         _.on(
           "cursorActivity",
