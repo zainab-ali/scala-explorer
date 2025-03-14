@@ -10,7 +10,7 @@ import scala.annotation.tailrec
 
 @main def hello =
   val openNodes = WebStorageVar
-    .localStorage(key = "openNodes", syncOwner = None)
+    .localStorage(key = "scalameta-openNodes", syncOwner = None)
     .withCodec[Set[Int]](
       _.mkString(","),
       a =>
@@ -21,16 +21,82 @@ import scala.annotation.tailrec
     )
 
   val codeVar = WebStorageVar
-    .localStorage(key = "code", syncOwner = None)
+    .localStorage(key = "scalameta-code", syncOwner = None)
     .text(CODE)
 
   val cursorVar = Var(CodeMirrorCursor(0, 0))
   val hoverVar = Var(Option.empty[Int])
-  var treeViewVar = Var(Option.empty[TreeView])
-  var errorVar = Var(Option.empty[String])
+  val treeViewVar = Var(Option.empty[TreeView])
+  val errorVar = Var(Option.empty[String])
+  val hashVar = Var(Option.empty[String])
 
-  def parse(s: String): Either[String, TreeView] =
-    scala.meta.dialects.Scala3.apply(s).parse[scala.meta.Source] match
+  val (allowedDialects, serialise) =
+    import scala.meta.dialects.*
+    val l = List(
+      "Scala 2.12" -> Scala212,
+      "Scala 2.13" -> Scala213,
+      "Scala 3" -> Scala3,
+      "Scala 3 Future" -> Scala3Future,
+      "SBT 1.x" -> Sbt1
+    )
+
+    (l, l.map(_.swap).toMap)
+  end val
+
+  val dialectVar = WebStorageVar
+    .localStorage(key = "scalameta-dialect", syncOwner = None)
+    .withCodec[Dialect](
+      serialise(_),
+      a =>
+        Try(
+          allowedDialects
+            .find(_._1 == a)
+            .map(_._2)
+            .getOrElse(scala.meta.dialects.Scala3)
+        ),
+      Try(scala.meta.dialects.Scala3)
+    )
+
+  // try
+  //   dom.window
+  //     .atob(dom.window.location.hash.stripPrefix("#"))
+  //     .split(":", 2)
+  //     .toList match
+  //     case dialect :: code :: Nil =>
+  //       allowedDialects
+  //         .find(_._1 == dialect)
+  //         .map(_._2)
+  //         .foreach: dialect =>
+  //           dialectVar.set(dialect)
+  //           codeVar.set(code)
+  //     case _ =>
+  // catch
+  //   case exc =>
+  //     println(s"Error parsing hash: ${exc.getMessage}")
+  // end try
+
+  val dialectPicker = div(
+    cls := "flex flex-row gap-2 text-xs mb-2",
+    children <-- dialectVar.signal.map: current =>
+      allowedDialects.map: (name, dialect) =>
+        button(
+          cls := (if dialect != current then
+                    "cursor-pointer bg-gray-200 hover:bg-gray-300 rounded-md px-2 py-1 text-xs"
+                  else "bg-gray-800 rounded-md px-2 py-1 text-xs text-white"),
+          name,
+          onClick.mapTo(dialect) --> dialectVar.writer
+        )
+  )
+
+  val updateHash = codeVar.signal
+    .combineWith(dialectVar.signal)
+    .map: (code, dialect) =>
+      dom.window.btoa(serialise(dialect) + ":" + code)
+    .--> { hash => // dom.window.location.hash = hash
+    }
+
+  def parse(s: String, dialect: Dialect): Either[String, TreeView] =
+    dialect.apply(s).parse[scala.meta.Source] match
       case x: Parsed.Success[scala.meta.Source] =>
         Right(
           TreeView(
@@ -49,7 +115,7 @@ import scala.annotation.tailrec
   val updateTextIndex =
     codeVar.signal.map(TextIndex.construct(_)) --> textIndex.writer
 
-  val parsed = codeVar.signal.map(parse)
+  val parsed = codeVar.signal.combineWith(dialectVar.signal).map(parse)
 
   val updateTreeView =
     parsed.map(_.toOption) --> treeViewVar.writer
@@ -71,6 +137,7 @@ import scala.annotation.tailrec
       updateTextIndex,
       updateTreeView,
       updateError,
+      updateHash,
       h1("Scalameta AST explorer", cls := "text-4xl font-bold"),
       p(
         "This small webapp allows you to explore the AST of Scala code",
@@ -80,6 +147,7 @@ import scala.annotation.tailrec
         cls := "flex md:flex-col sm:flex-col lg:flex-row justify-baseline 2xl:flex-row gap-4 w-full",
         div(
           cls := "w-6/12 h-full",
+          dialectPicker,
           codeMirrorTextArea(
             codeVar,
             cursorVar,

@@ -51,6 +51,7 @@ case class TreeView(
   lazy val root = div(
     cls := "bg-gray-100 p-4 rounded-lg shadow-md",
     deepestTreeUnderCursor --> path,
+    path.signal.map(_.toSet) --> append,
     div(
       cls := "flex flex-row gap-2 my-2",
       a(
@@ -112,7 +113,6 @@ case class TreeView(
         cls := "list-inside list-none ml-4",
         t.children.map(child => li(encode(child))),
         display <-- openNodes.signal
-          .combineWithFn(path)(_ ++ _)
           .map(_.contains(id))
           .map(if _ then "block" else "none")
       )
