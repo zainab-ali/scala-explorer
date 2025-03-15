@@ -1,4 +1,5 @@
 import scala.annotation.tailrec
+
 case class OffsetRange(from: Int, to: Int):
   override def toString: String = s"[$from-$to]"
 
@@ -17,19 +18,11 @@ object IntervalTree:
       case Process(work: List[OffsetRange])
       case Fuse(centerPoint: Int, overlapping: List[OffsetRange])
 
-    var i = 0
-
     @tailrec
     def splitTR(
         workStack: List[WorkType],
         stack: List[Tree]
     ): Option[Tree] =
-      i += 1
-      assert(i < 10_000, "Too many iterations")
-      // println(
-      //   s"\n$i: workstack:\n  ${workStack
-      //       .mkString("\n  ")}\nstack ():\n  ${stack.mkString("\n  ")}"
-      // )
       workStack match
         case Nil => stack.headOption
         case WorkType.Fuse(centerPoint, overlapping) :: rest =>
@@ -50,8 +43,6 @@ object IntervalTree:
             val start = sortedSpans.head.from
             val end = sortedSpans.last.to
             val centerPoint = (start + end) / 2
-            // println("centerPoint (scheduling): " + centerPoint)
-
             val toTheLeft = List.newBuilder[OffsetRange]
             val toTheRight = List.newBuilder[OffsetRange]
             val overlapping = List.newBuilder[OffsetRange]
@@ -62,9 +53,6 @@ object IntervalTree:
               else overlapping += span
             }
 
-            // println(
-            //   s"scheduling:\n  left: $toTheLeft\n  right: $toTheRight\n  overlapping: $overlapping"
-            // )
             splitTR(
               WorkType.Process(toTheLeft.result()) ::
                 WorkType.Process(toTheRight.result()) ::
@@ -74,30 +62,6 @@ object IntervalTree:
             )
       end match
     end splitTR
-
-    def split(sortedSpans: List[OffsetRange]): Tree =
-      val result =
-        if sortedSpans.size == 1 then Tree.Leaf(sortedSpans.head)
-        else if sortedSpans.size == 0 then Tree.Empty
-        else
-          val start = sortedSpans.head.from
-          val end = sortedSpans.last.to
-          val centerPoint = (start + end) / 2
-          val toTheLeft = sortedSpans.takeWhile(_.to < centerPoint)
-          val toTheRight = sortedSpans.dropWhile(_.from < centerPoint)
-          val overlapping =
-            sortedSpans.filter(s =>
-              s.from <= centerPoint && s.to >= centerPoint
-            )
-          Tree.Split(
-            centerPoint,
-            split(toTheLeft),
-            split(toTheRight),
-            overlapping.toList
-          )
-      println(s"$sortedSpans -- $result")
-      result
-    end split
 
     val sorted =
       mp.keys.toList.sortBy(_.from)
@@ -112,20 +76,23 @@ object IntervalTree:
       extends IntervalTree[T]:
     override def resolve(offset: Int): List[T] =
       import Tree.*
-      def go(t: Tree): List[OffsetRange] =
+      @tailrec
+      def go(t: Tree, result: List[OffsetRange]): List[OffsetRange] =
         t match
           case Split(point, left, right, in) =>
-            if offset == point then in
-            else if offset > point then in.filter(_.to >= offset) ++ go(right)
-            else if offset < point then in.filter(_.from <= offset) ++ go(left)
-            else Nil
+            if offset == point then in ++ result
+            else if offset > point then
+              go(right, in.filter(_.to >= offset) ++ result)
+            else if offset < point then
+              go(left, in.filter(_.from <= offset) ++ result)
+            else result
           case Leaf(span) =>
             if span.from > offset || span.to < offset
-            then Nil
-            else List(span)
-          case Empty => Nil
+            then result
+            else span :: result
+          case Empty => result
 
-      go(tree).flatMap(mp.get)
+      go(tree, Nil).flatMap(mp.get)
     end resolve
   end Impl
 

@@ -13,6 +13,8 @@ jobs:
         with:
           power: true
       - run: npm install && npm run buildForGithubPages
+      - name: Test
+        run: scala-cli test .
       - name: Publish gh-pages
         uses: peaceiris/actions-gh-pages@v4
         with:
