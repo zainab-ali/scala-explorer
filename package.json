@@ -12,7 +12,7 @@
     "watchScalajs": "mkdir -p out && scala-cli --power package . -w -f -o ./out/scalajs-frontend.js --js-module-kind es --js-emit-source-maps",
     "buildScalajs": "mkdir -p out && scala-cli --power package . -f -o ./out/scalajs-frontend.js --js-module-kind es --js-emit-source-maps",
     "buildScalajsRelease": "mkdir -p out && scala-cli --power package . -f -o ./out/scalajs-frontend.js --js-mode release --js-module-kind es --js-emit-source-maps",
-    "buildForGithubPages": "npm run buildScalajsRelease && vite build --base=/scalameta-ast-explorer"
+    "buildForGithubPages": "npm run buildScalajsRelease && vite build --base=/ast-explorer"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",
