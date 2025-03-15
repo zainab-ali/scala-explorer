@@ -171,19 +171,13 @@ val header = div(
     cls := "text-sm",
     a(
       "Github",
-      href := "https://github.com/keynmol/scalameta-ast-explorer",
+      href := "https://github.com/scalameta/ast-explorer",
       basicLink
     ),
     " | ",
     a(
       "Scalameta",
       href := "https://scalameta.org",
-      basicLink
-    ),
-    " | ",
-    a(
-      "Scala.js",
-      href := "https://scala-js.org",
       basicLink
     ),
     " | ",
