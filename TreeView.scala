@@ -23,7 +23,7 @@ case class TreeView(
   private def isToggled(id: Int) = openNodes.signal.map(_.contains(id))
   private def isOnPath(id: Int) = path.signal.map(_.contains(id))
 
-  private val path = Var(List.empty[Int])
+  val path = Var(List.empty[Int])
 
   private lazy val deepestTreeUnderCursor =
     cursor.signal.map: cursor =>
@@ -90,7 +90,13 @@ case class TreeView(
     val id = reverse(t)
     span(
       span(
-        cls.toggle("bg-amber-500") <-- isOnPath(id),
+        cls <-- path.signal.map(p =>
+          if p.headOption.contains(id) then
+            "bg-amber-500"
+          else if p.contains(id) then
+            "bg-amber-100"
+          else ""
+        ),
         a(
           cls := "text-blue-700 text-sm",
           href := "#",

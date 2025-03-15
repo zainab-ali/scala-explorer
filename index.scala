@@ -111,10 +111,6 @@ import scala.annotation.tailrec
         Left(s"ERROR: $e")
   end parse
 
-  val textIndex = Var(TextIndex.construct(codeVar.now()))
-  val updateTextIndex =
-    codeVar.signal.map(TextIndex.construct(_)) --> textIndex.writer
-
   val parsed = codeVar.signal.combineWith(dialectVar.signal).map(parse)
 
   val updateTreeView =
@@ -133,16 +129,16 @@ import scala.annotation.tailrec
 
   val app =
     div(
-      cls := "content mx-auto my-4 w-10/12 bg-white/70 p-6 rounded-xl flex flex-col gap-4 min-h-150",
-      updateTextIndex,
       updateTreeView,
       updateError,
       updateHash,
-      h1("Scalameta AST explorer", cls := "text-4xl font-bold"),
-      p(
-        "This small webapp allows you to explore the AST of Scala code",
-        cls := "text-sm"
+      cls := "content mx-auto my-4 w-10/12 bg-white/70 p-6 rounded-xl flex flex-col gap-4 min-h-150",
+      div(
+        cls := "flex items-center gap-4",
+        img(src := "https://scalameta.org/img/scalameta.png", cls := "h-12"),
+        h1("Scala AST explorer", cls := "text-4xl font-bold")
       ),
+      header,
       div(
         cls := "flex md:flex-col sm:flex-col lg:flex-row justify-baseline 2xl:flex-row gap-4 w-full",
         div(
@@ -161,6 +157,49 @@ import scala.annotation.tailrec
 
   renderOnDomContentLoaded(dom.document.getElementById("app"), app)
 end hello
+
+val basicLink =
+  cls := "text-emerald-800 hover:no-underline underline"
+
+val header = div(
+  cls := "flex flex-row gap-4 place-content-between w-full",
+  p(
+    cls := "text-md",
+    "Explore the AST of Scala code"
+  ),
+  p(
+    cls := "text-sm",
+    a(
+      "Github",
+      href := "https://github.com/keynmol/scalameta-ast-explorer",
+      basicLink
+    ),
+    " | ",
+    a(
+      "Scalameta",
+      href := "https://scalameta.org",
+      basicLink
+    ),
+    " | ",
+    a(
+      "Scala.js",
+      href := "https://scala-js.org",
+      basicLink
+    ),
+    " | ",
+    a(
+      "Scala.js",
+      href := "https://scala-js.org",
+      basicLink
+    ),
+    " | ",
+    a(
+      "Laminar",
+      href := "https://laminar.dev",
+      basicLink
+    )
+  )
+)
 
 def codeMirrorTextArea(
     target: Var[String],
