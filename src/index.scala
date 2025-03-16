@@ -19,37 +19,12 @@ import scala.util.Try
 
   val codeVar = WebStorageVar
     .localStorage(key = "scalameta-code", syncOwner = None)
-    .text(CODE)
+    .text(SampleCode)
   val cursorVar = Var(CodeMirrorCursor(0, 0))
   val hoverVar = Var(Option.empty[Int])
   val treeViewVar = Var(Option.empty[TreeView])
   val errorVar = Var(Option.empty[String])
-  // val hashVar = Var(Option.empty[String])
-  // try
-  //   dom.window
-  //     .atob(dom.window.location.hash.stripPrefix("#"))
-  //     .split(":", 2)
-  //     .toList match
-  //     case dialect :: code :: Nil =>
-  //       allowedDialects
-  //         .find(_._1 == dialect)
-  //         .map(_._2)
-  //         .foreach: dialect =>
-  //           dialectVar.set(dialect)
-  //           codeVar.set(code)
-  //     case _ =>
-  // catch
-  //   case exc =>
-  //     println(s"Error parsing hash: ${exc.getMessage}")
-  // end try
   val dialectPicker = DialectPicker()
-
-  val updateHash = codeVar.signal
-    .combineWith(dialectPicker.dialectVar.signal)
-    .map: (code, dialect) =>
-      dom.window.btoa(dialectPicker.serialise(dialect) + ":" + code)
-    .--> { hash => // dom.window.location.hash = hash
-    }
 
   def parse(s: String, dialect: Dialect): Either[String, TreeView] =
     dialect.apply(s).parse[scala.meta.Source] match
@@ -70,6 +45,7 @@ import scala.util.Try
   val parsed =
     codeVar.signal.combineWith(dialectPicker.dialectVar.signal).map(parse)
 
+  // TODO: stop using options and just do Either
   val updateTreeView =
     parsed.map(_.toOption) --> treeViewVar.writer
 
@@ -81,7 +57,7 @@ import scala.util.Try
       .combineWith(errorVar)
       .map:
         case (None, Some(err)) => p(err)
-        case (Some(tv), None)  => tv.root
+        case (Some(tv), None)  => tv.node
         case _                 => emptyNode
 
   val halfsplit =
@@ -99,7 +75,6 @@ import scala.util.Try
     div(
       updateTreeView,
       updateError,
-      updateHash,
       cls := "content mx-auto my-4 w-10/12 bg-white/70 p-6 rounded-xl flex flex-col gap-4 min-h-150",
       div(
         cls := "flex items-center gap-4",
@@ -158,7 +133,7 @@ val header = div(
   )
 )
 
-val CODE =
+val SampleCode =
   """
 object X:
   class Test(a: Int):
