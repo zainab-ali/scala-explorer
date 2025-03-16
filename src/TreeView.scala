@@ -16,11 +16,11 @@ case class TreeView(
     direct.get(id)
 
   lazy val node = div(
-    cls := "bg-gray-100 p-4 rounded-lg shadow-md w-full",
+    cls := "bg-gray-100 p-2 rounded-lg shadow-md w-full",
     deepestTreeUnderCursor --> pathToCursor,
     pathToCursor.signal.map(_.toSet) --> append,
     div(
-      cls := "flex flex-row gap-2 my-2",
+      cls := "flex flex-row gap-2 mb-2",
       a(
         href := "#",
         cls := "bg-gray-200 hover:bg-gray-300 rounded-md px-2 py-1 text-xs",

@@ -4,6 +4,7 @@ import org.scalajs.dom
 
 import scala.meta.*
 import scala.util.Try
+import scala.meta.parsers.Parsed
 
 @main def hello =
   val openNodes = WebStorageVar
@@ -23,23 +24,23 @@ import scala.util.Try
   val cursorVar = Var(CodeMirrorCursor(0, 0))
   val hoverVar = Var(Option.empty[Int])
   val treeViewVar = Var(Option.empty[TreeView])
-  val errorVar = Var(Option.empty[String])
+  val errorVar = Var(Option.empty[Parsed.Error])
   val dialectPicker = DialectPicker()
 
-  def parse(s: String, dialect: Dialect): Either[String, TreeView] =
-    dialect.apply(s).parse[scala.meta.Source] match
-      case x: Parsed.Success[scala.meta.Source] =>
-        Right(
-          TreeView(
-            x.tree,
-            TextIndex.construct(s),
-            openNodes,
-            cursorVar,
-            hoverVar
-          )
+  def parse(s: String, dialect: Dialect): Either[Parsed.Error, TreeView] =
+    dialect
+      .apply(s)
+      .parse[scala.meta.Source]
+      .toEither
+      .map(tree =>
+        TreeView(
+          tree,
+          TextIndex.construct(s),
+          openNodes,
+          cursorVar,
+          hoverVar
         )
-      case e: Parsed.Error =>
-        Left(s"ERROR: $e")
+      )
   end parse
 
   val parsed =
@@ -56,9 +57,13 @@ import scala.util.Try
     treeViewVar.signal
       .combineWith(errorVar)
       .map:
-        case (None, Some(err)) => p(err)
-        case (Some(tv), None)  => tv.node
-        case _                 => emptyNode
+        case (None, Some(err)) =>
+          p(
+            cls := "text-wrap text-sm bg-red-200 text-red-800 p-4 font-bold rounded-md",
+            err.toString
+          )
+        case (Some(tv), None) => tv.node
+        case _                => emptyNode
 
   val halfsplit =
     Seq(cls := "lg:w-6/12 h-full md:w-full")
@@ -82,11 +87,11 @@ import scala.util.Try
         h1("Scala AST explorer", cls := "text-4xl font-bold")
       ),
       header,
+      dialectPicker.node,
       div(
         cls := "flex flex-col xs:flex-col md:flex-col sm:flex-col lg:flex-row xl:flex-row 2xl:flex-row  justify-baseline gap-4 w-full",
         div(
           halfsplit,
-          dialectPicker.node,
           textEditor.node
         ),
         div(halfsplit, p(code(pre(child <-- resultNode))))
