@@ -49,7 +49,7 @@ case class TreeView(
         .getOrElse(Nil)
 
   lazy val root = div(
-    cls := "bg-gray-100 p-4 rounded-lg shadow-md",
+    cls := "bg-gray-100 p-4 rounded-lg shadow-md w-full",
     deepestTreeUnderCursor --> path,
     path.signal.map(_.toSet) --> append,
     div(
@@ -91,10 +91,8 @@ case class TreeView(
     span(
       span(
         cls <-- path.signal.map(p =>
-          if p.headOption.contains(id) then
-            "bg-amber-500"
-          else if p.contains(id) then
-            "bg-amber-100"
+          if p.headOption.contains(id) then "bg-amber-500"
+          else if p.contains(id) then "bg-amber-100"
           else ""
         ),
         a(

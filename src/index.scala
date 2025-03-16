@@ -23,7 +23,6 @@ import scala.annotation.tailrec
   val codeVar = WebStorageVar
     .localStorage(key = "scalameta-code", syncOwner = None)
     .text(CODE)
-
   val cursorVar = Var(CodeMirrorCursor(0, 0))
   val hoverVar = Var(Option.empty[Int])
   val treeViewVar = Var(Option.empty[TreeView])
@@ -127,6 +126,9 @@ import scala.annotation.tailrec
         case (Some(tv), None)  => tv.root
         case _                 => emptyNode
 
+  val halfsplit =
+    Seq(cls := "lg:w-6/12 h-full md:w-full")
+
   val app =
     div(
       updateTreeView,
@@ -140,9 +142,9 @@ import scala.annotation.tailrec
       ),
       header,
       div(
-        cls := "flex md:flex-col sm:flex-col lg:flex-row justify-baseline 2xl:flex-row gap-4 w-full",
+        cls := "flex flex-col xs:flex-col md:flex-col sm:flex-col lg:flex-row xl:flex-row 2xl:flex-row  justify-baseline gap-4 w-full",
         div(
-          cls := "w-6/12 h-full",
+          halfsplit,
           dialectPicker,
           codeMirrorTextArea(
             codeVar,
@@ -151,7 +153,7 @@ import scala.annotation.tailrec
             treeViewVar.signal
           )
         ),
-        div(cls := "w-6/12 h-full", p(code(pre(child <-- resultNode))))
+        div(halfsplit, p(code(pre(child <-- resultNode))))
       )
     )
 
