@@ -5,3 +5,4 @@
 //> using dep org.scalameta:scalameta_sjs1_2.13:4.13.4
 //> using test.dep org.scalameta::munit::1.1.0
 //> using scala 3.6.4
+//> using option -Wunused:all

@@ -1,11 +1,7 @@
-import scalajs.js
-import org.scalajs.dom
 import com.raquo.laminar.api.L.*
-import com.raquo.laminar.nodes.ReactiveHtmlElement
-import com.raquo.airstream.web.WebStorageVar
-import scala.meta.*
-import scala.util.Try
+
 import scala.annotation.tailrec
+import scala.meta.*
 
 case class TreeView(
     tree: Tree,
@@ -21,7 +17,6 @@ case class TreeView(
     cur ++ next
 
   private def isToggled(id: Int) = openNodes.signal.map(_.contains(id))
-  private def isOnPath(id: Int) = path.signal.map(_.contains(id))
 
   val path = Var(List.empty[Int])
 
@@ -77,14 +72,6 @@ case class TreeView(
 
   def getTree(id: Int): Option[Tree] =
     direct.get(id)
-
-  private def getPath(t: Tree): Set[Int] =
-    val path = List.newBuilder[Int]
-    var current = t
-    while current.parent.isDefined do
-      current = current.parent.get
-      path += reverse(current)
-    path.result().toSet
 
   private def encode(t: Tree): Element =
     val id = reverse(t)

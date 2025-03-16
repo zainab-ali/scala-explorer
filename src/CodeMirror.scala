@@ -1,6 +1,6 @@
 import org.scalajs.dom
+
 import scala.scalajs.js
-import scala.scalajs.js.annotation.JSImport
 import scala.scalajs.js.annotation.JSGlobal
 
 @js.native
