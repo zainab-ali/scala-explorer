@@ -6,6 +6,7 @@ import scala.meta.*
 import scala.util.Try
 import scala.meta.parsers.Parsed
 
+// TODO: Zainab - Why are we using local storage?
 @main def hello =
   val openNodes = WebStorageVar
     .localStorage(key = "scalameta-openNodes", syncOwner = None)
@@ -23,20 +24,19 @@ import scala.meta.parsers.Parsed
     .text(SampleCode)
   val cursorVar = Var(CodeMirrorCursor(0, 0))
   val hoverVar = Var(Option.empty[Int])
-  val treeViewVar = Var(Option.empty[TreeView])
+  val cheatSheetVar = Var(Option.empty[CheatSheet])
   val errorVar = Var(Option.empty[Parsed.Error])
   val dialectPicker = DialectPicker()
 
-  def parse(s: String, dialect: Dialect): Either[Parsed.Error, TreeView] =
+  def parse(s: String, dialect: Dialect): Either[Parsed.Error, CheatSheet] =
     dialect
       .apply(s)
       .parse[scala.meta.Source]
       .toEither
       .map(tree =>
-        TreeView(
+        // TODO: Zainab - Run matchers
+        CheatSheet(
           tree,
-          TextIndex.construct(s),
-          openNodes,
           cursorVar,
           hoverVar
         )
@@ -47,14 +47,15 @@ import scala.meta.parsers.Parsed
     codeVar.signal.combineWith(dialectPicker.dialectVar.signal).map(parse)
 
   // TODO: stop using options and just do Either
-  val updateTreeView =
-    parsed.map(_.toOption) --> treeViewVar.writer
+  val updatedCheatSheet =
+    parsed.map(_.toOption) --> cheatSheetVar.writer
 
   val updateError =
     parsed.map(_.left.toOption) --> errorVar.writer
 
+    // TODO: Zainab - The treeViewVar is the thing we want to replace.
   val resultNode =
-    treeViewVar.signal
+    cheatSheetVar.signal
       .combineWith(errorVar)
       .map:
         case (None, Some(err)) =>
@@ -62,7 +63,7 @@ import scala.meta.parsers.Parsed
             cls := "text-wrap text-sm bg-red-200 text-red-800 p-4 font-bold rounded-md",
             err.toString
           )
-        case (Some(tv), None) => tv.node
+        case (Some(cs), None) => cs.node
         case _                => emptyNode
 
   val halfsplit =
@@ -73,18 +74,18 @@ import scala.meta.parsers.Parsed
       codeVar,
       cursorVar,
       hoverVar,
-      treeViewVar.signal
+      cheatSheetVar.signal
     )
 
   val app =
     div(
-      updateTreeView,
+      updatedCheatSheet,
       updateError,
       cls := "content mx-auto my-4 w-10/12 bg-white/70 p-6 rounded-xl flex flex-col gap-4 min-h-150",
       div(
         cls := "flex items-center gap-4",
         img(src := "https://scalameta.org/img/scalameta.png", cls := "h-12"),
-        h1("Scala AST explorer", cls := "text-4xl font-bold")
+        h1("Scala explorer", cls := "text-4xl font-bold")
       ),
       header,
       dialectPicker.node,
@@ -94,7 +95,8 @@ import scala.meta.parsers.Parsed
           halfsplit,
           textEditor.node
         ),
-        div(halfsplit, p(code(pre(child <-- resultNode))))
+        // TODO: Zainab - This shouldn't be in a code block
+        div(halfsplit, p((child <-- resultNode)))
       )
     )
 
@@ -108,7 +110,7 @@ val header = div(
   cls := "flex flex-row gap-4 place-content-between w-full",
   p(
     cls := "text-md",
-    "Explore the AST of Scala code"
+    "Explore your Scala code"
   ),
   p(
     cls := "text-sm",
@@ -141,6 +143,6 @@ val header = div(
 val SampleCode =
   """
 object X:
-  class Test(a: Int):
+  class Test[A](a: A):
     def hello = 25
 """

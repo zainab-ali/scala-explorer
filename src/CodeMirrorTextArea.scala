@@ -21,18 +21,18 @@ class CodeMirrorTextArea(
     target: Var[String],
     cursor: Var[CodeMirrorCursor],
     hover: Var[Option[Int]],
-    tv: Signal[Option[TreeView]]
+    cs: Signal[Option[CheatSheet]]
 ):
   private var instance = Option.empty[CodeMirrorInstance]
   private var marker = Option.empty[CodeMirrorMark]
-  private val highlightText = hover.signal.combineWith(tv) --> {
-    (hoverOpt, treeViewOpt) =>
+  private val highlightText = hover.signal.combineWith(cs) --> {
+    (hoverOpt, cheatSheetOpt) =>
       marker.foreach(_.clear())
       for
-        treeview <- treeViewOpt
+        cheatSheet <- cheatSheetOpt
         hover <- hoverOpt
         inst <- instance
-        tree <- treeview.getTree(hover)
+        tree <- cheatSheet.getTree(hover)
       do
         marker = Some(
           inst.markText(
