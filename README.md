@@ -17,3 +17,5 @@ Pre-requisites:
 Developing:
 - Run `npm run dev` to run the development server (with Scala auto-reload).
 - Run `npm run build` to build the production version in `dist/` folder.
+
+# random change
