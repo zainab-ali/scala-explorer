@@ -9,9 +9,9 @@
     "viteWithHost": "vite --host 0.0.0.0",
     "build": "npm run buildScalajsRelease && vite build",
     "preview": "vite preview",
-    "watchScalajs": "mkdir -p out && scala --power package . -w -f -o ./out/scalajs-frontend.js --js-module-kind es --js-emit-source-maps --js-version 1.18.2",
-    "buildScalajs": "mkdir -p out && scala --power package . -f -o ./out/scalajs-frontend.js --js-module-kind es --js-emit-source-maps --js-version 1.18.2",
-    "buildScalajsRelease": "mkdir -p out && scala --power package . -f -o ./out/scalajs-frontend.js --js-mode release --js-module-kind es --js-emit-source-maps --js-version 1.18.2",
+    "watchScalajs": "mkdir -p out && scala-cli --power package . -w -f -o ./out/scalajs-frontend.js --js-module-kind es --js-emit-source-maps --js-version 1.18.2",
+    "buildScalajs": "mkdir -p out && scala-cli --power package . -f -o ./out/scalajs-frontend.js --js-module-kind es --js-emit-source-maps --js-version 1.18.2",
+    "buildScalajsRelease": "mkdir -p out && scala-cli --power package . -f -o ./out/scalajs-frontend.js --js-mode release --js-module-kind es --js-emit-source-maps --js-version 1.18.2",
     "buildForGithubPages": "npm run buildScalajsRelease && vite build --base=/ast-explorer"
   },
   "devDependencies": {
