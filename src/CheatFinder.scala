@@ -45,10 +45,19 @@ object Rule:
     }
   )
 
+  lazy val stringRule = Rule(
+    "A string",
+    "https://docs.scala-lang.org/overviews/collections-2.13/strings.html#inner-main",
+    _.collect { case aString: Lit.String =>
+      aString.toString
+      }
+  )
+
   lazy val rules = List(
     objectRule,
     classRule,
-    typeParameterRule
+    typeParameterRule,
+    stringRule
   )
 
 end Rule
