@@ -50,14 +50,34 @@ object Rule:
     "https://docs.scala-lang.org/overviews/collections-2.13/strings.html#inner-main",
     _.collect { case aString: Lit.String =>
       aString.toString
-      }
+    }
+  )
+
+  lazy val typeRule = Rule(
+    "A Type",
+    "https://docs.scala-lang.org/scala3/book/types-introduction.html",
+    _.collect { case aType: Type.Name =>
+      aType.toString()
+    }
+  )
+
+  val typeList: List[(String, String)] = List(
+    (
+      "Int",
+      "https://docs.scala-lang.org/scala3/book/scala-for-javascript-devs.html#numbers-and-arithmetic"
+    ),
+    (
+      "List",
+      "https://docs.scala-lang.org/scala3/book/collections-classes.html#list"
+    )
   )
 
   lazy val rules = List(
     objectRule,
     classRule,
     typeParameterRule,
-    stringRule
+    stringRule,
+    typeRule
   )
 
 end Rule
