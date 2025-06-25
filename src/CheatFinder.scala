@@ -61,15 +61,68 @@ object Rule:
     }
   )
 
-  val typeList: List[(String, String)] = List(
-    (
-      "Int",
-      "https://docs.scala-lang.org/scala3/book/scala-for-javascript-devs.html#numbers-and-arithmetic"
-    ),
-    (
-      "List",
-      "https://docs.scala-lang.org/scala3/book/collections-classes.html#list"
-    )
+  lazy val booleanRule = Rule(
+    "A Boolean",
+    "https://docs.scala-lang.org/scala3/book/scala-for-javascript-devs.html#boolean-values",
+    _.collect { case aBoolean: Lit.Boolean =>
+      aBoolean.toString()
+    }
+  )
+
+  lazy val integerRule = Rule(
+    "An Integer",
+    "https://docs.scala-lang.org/scala3/book/first-look-at-types.html#scalas-value-types",
+    _.collect { case anInteger: Lit.Int =>
+      anInteger.toString()
+    }
+  )
+
+  lazy val importRule = Rule(
+    "An import",
+    "https://docs.scala-lang.org/tour/packages-and-imports.html#imports",
+    _.collect { case anImport: Import =>
+      anImport.toString
+    }
+  )
+
+  lazy val wildcardImportRule = Rule(
+    "A wildcard import",
+    "https://docs.scala-lang.org/tour/packages-and-imports.html#imports",
+    _.collect { case aWildcardImport: Importee.Wildcard =>
+      aWildcardImport.toString
+    }
+  )
+
+  private lazy val givenRule = Rule(
+    "A given instance",
+    "https://docs.scala-lang.org/scala3/book/ca-context-parameters.html#given-instances-implicit-definitions-in-scala-2",
+    _.collect { case aGiven @Defn.GivenAlias(_, name, _, _, _, _) =>
+      name.toString
+    }
+  )
+
+  private lazy val covariantRule = Rule(
+    "A covariant type",
+    "https://docs.scala-lang.org/tour/variances.html#covariance",
+    _.collect { case aThing @ Type.Param(List(Mod.Covariant()), _, _, _, _, _) =>
+      aThing.toString
+    }
+  )
+
+  private lazy val contravariantRule = Rule(
+    "An contravariant type",
+    "https://docs.scala-lang.org/tour/variances.html#contravariance",
+    _.collect { case aThing @ Type.Param(List(Mod.Contravariant()), _, _, _, _, _) =>
+      aThing.toString
+    }
+  )
+
+  private lazy val unitRule = Rule(
+    "A Unit",
+    "https://www.scala-lang.org/api/current/scala/Unit.html",
+    _.collect { case aUnit: Lit.Unit =>
+      aUnit.toString
+    }
   )
 
   lazy val rules = List(
@@ -77,7 +130,15 @@ object Rule:
     classRule,
     typeParameterRule,
     stringRule,
-    typeRule
+    typeRule,
+    booleanRule,
+    integerRule,
+    importRule,
+    wildcardImportRule,
+    givenRule,
+    covariantRule,
+    contravariantRule,
+    unitRule
   )
 
 end Rule
